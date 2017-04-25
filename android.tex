@@ -119,6 +119,29 @@ static final int OFF = 0;
 \end{minted}
 \end{itemize}
 
+\subsection{StringBuilder Optimizations}
+As we talked about ArrayList, StringBuilder also does the same thing but in the case of StringBuilder the stituation is even worse. This is because StringBuilder assigns the memory exactly to the size of string needed to append + 1 to store end of string. The stituation become worse and worse everytime a new string is appended because everytime the string appends in StringBuilder , each time a new Memory is allocated with size of previous allocated memory + new String Size +1. Consider an example where you need to 1000 names in a single string, using StringBuilder it would take 1000 allocation of memory and every time it allocate the memory the previous memory is copied into new one making StringBuiler much worse than ArrayList.
+\begin{minted}[bgcolor=LightGray]{Java}
+public String getNames(List<Student> students){
+  StringBuilder sb = new StringBuilder();
+  for (Student s : students){
+    sb.append(s.name + " ");
+  }
+  return sb.toString();
+}
+\end{minted}
+A simple Solution to this problem is using the some random number (for say 20) and then intialize the StringBuilder with averageNumber * number of strings to append. This will allow to allocate the StringBuilder a starting memory and can help in reducing the allocations and memory.
+\begin{minted}[bgcolor=LightGray]{Java}
+public getNames(List<Student> students){
+  int num = 20;
+  StringBuilder sb = new StringBuilder(num*student.size());
+  for (Student s : students){
+    sb.append(s.name + " ");
+  }
+  return sb.toString();
+}
+\end{minted}
+
 \section{Conclusion}
 \blindtext
 
