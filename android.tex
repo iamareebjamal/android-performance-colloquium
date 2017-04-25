@@ -75,6 +75,88 @@ Because they can exhaust available system memory as an application runs, memory 
 
 \subsubsection{Common memory leaks}
 
+Some common memory leak examples in Android are :\\
+
+\begin{itemize}
+	\item \emph{Static Context Leak}\\
+	The easiest way to leak an  is by defining a static variable inside the class definition of the Activity and then setting it to the running instance of that Activity. If this reference is not cleared before the Activity’s lifecycle completes, the Activity will be leaked. This is because the object representing the class of the Activity (i.e., MainActivity) is static and remains loaded in memory for the entire runtime of the app. If this class object holds a reference to your Activity instance, it therefore won’t be eligible for garbage collection.
+	
+	The same applies if any Context subclass is stored in a static variable, namely:
+	\begin{itemize}
+		\item Activity
+		\item View
+		\item Service
+	\end{itemize}
+\begin{minted}[bgcolor=LightGray]{Java}
+private static Context context;
+	
+@Override
+  public void onCreate(Bundle save) {
+  context = this;
+}
+\end{minted}
+
+	\item \emph{Non Static Inner Classes}\\
+	The non static Inner Class always contains a reference to the containing class, and if this class is a Context subclass, then there is an eminent memry leak as each instance of such inner class will hold a reference to outer class and will be independent of Activity Lifecycle, making it difficult for GC to collect the activity if inner class still holds a reference to it.
+	
+	If the original Activity is replaced by another one, the inner class reference will be in invalid state, and can result in application crash as well.
+\begin{minted}[bgcolor=LightGray]{Java}
+public void onCreate(Bundle save) {
+  /* ... */
+  btn.setOnClickListener((view) -> {
+    (new DummyClass()).doSomeTask();
+  });
+}
+
+class DummyClass {
+  public void doSomeTask() {
+    /* Some Task */
+  }
+}
+\end{minted}
+
+	\item \emph{Anonymous Classes}\\
+	The same effect will happen if an anonymous class is declared in a context subclass such as Activity, as it also holds a reference to containing class. More detrimental effect will happen if a asynchronous task is executed in such a way. Because if it continues to perform background work after the Activity has been destroyed, the reference to the Activity will persist and it won’t be garbage collected until after the background task completes.
+\begin{minted}[bgcolor=LightGray]{Java}
+void downloadImage() {
+  new AsyncTask<...>() {
+    @Override
+    protected Void doInBackground(Void... params) {
+      /* Download Image */
+      return image;
+    }
+    
+    @Override
+    protected Void onPostExecute(Image image) {
+      imageView.setBackground(image);
+    }
+    
+  }.execute();
+}
+
+public void onCreate(Bundle save) {
+  /* ... */
+  btn.setOnClickListener((view) -> {
+    (new DummyClass()).doSomeTask();
+  });
+}
+\end{minted}
+	In case the activity is replaced by another one, like when orientation is changed, the AsyncTask will not be destroyed and continue running, hence keeping the original activity in memory and once it finishes, it will try to update the views which are replaced already with another Activity, thus potentially causing a crash by NullPointerException
+	
+	This example being an extension of previous is very different use case and can present a memory leak in various deiiferent contexts but with similar pattern.
+	\begin{itemize}
+		\item Handlers
+		\item Threads
+		\item Listeners
+		\item TimerTasks
+		\item Sensor Managers
+	\end{itemize}
+	
+
+\end{itemize}
+
+
+
 \subsection{ArrayList Optimizations}
 ArrayList is most commonly used List, used to store arrays data of same type. ArrayList in java have some default size but Android SDk initialize ArrayList with size 0 by default.When any data is added to ArrayList, it first checks if the size of ArrayList is sufficient enough to save the data if yes then it easily stores data but in case where the ArrayList's size isn't enough to accomodate the data, ArrayList allocated a new memory with larger size (in multiples of 8) and copy all the previously stored data in new memory and then remove old memory used and finally add the new data.
 
@@ -176,6 +258,10 @@ https://developer.android.com/training/best-performance.html
 \bibitem{}
 Memory Leak,\\
 https://en.wikipedia.org/wiki/Memory-leak
+
+\bibitem{}
+Ways to Memory Leak in Android,\\
+http://blog.nimbledroid.com/2016/05/23/memory-leaks.html
 
 \end{thebibliography}
 
