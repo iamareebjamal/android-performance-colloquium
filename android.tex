@@ -1,6 +1,7 @@
 \documentclass[journal]{IEEEtran}
 \usepackage{blindtext}
 \usepackage{graphicx}
+\usepackage[none]{hyphenat}
 \usepackage{minted}
 \usepackage[dvipsnames]{xcolor}
 
@@ -25,11 +26,41 @@
 
 
 \begin{abstract}
-Android, being the most widely used operating system in the world, has attracted a large number of developers throughout the world. And since, the official programming language used to develop Android Apps is Java, the developers coming from its background often make wrong assumptions about the best practices in Android. Making these apps perform poorly in respect to CPU and memory utilisation. The purpose of this paper is to discuss some common solutions to optimisation problems associated with Android.
+Android, being the most widely used operating system in the world, has attracted a large number of developers throughout the world. And since, the official programming language used to develop Android Apps is Java, the developers coming from its background often make wrong assumptions about the best practices in Android. Making these apps perform poorly in respect to CPU and memory utilisation. The purpose of this paper is to discuss some common solutions to optimization problems associated with Android.
 \end{abstract}
 
 
 \section{Introduction}
+There are 3 areas of performance in mobile computing :
+\begin{itemize}
+	\item CPU
+	\item Memory
+	\item Network
+\end{itemize}
+Because of the fact that \emph{Network} optimization is generally language agnostic and is covered in various modern netwroking libraries, we will focus on \emph{CPU} and \emph{Memory} usage optimization and analysis techniques.\\
+The CPU utilization in case of mobile computing can be closely tied to memory as poor RAM optimisation may lead to repeated calls of Garbage Collector leading to wasteful CPU cycles meaning frame rate drops, so in order to optimize CPU performance, we should also improve the memory usage of the application.
+
+\section{Need of Performance}
+The need to optimize performance of any application comes from a basic need of user to avoid using applications that lag through the common workflow.\\
+To ensure smooth performance, app needs to call the basic \emph{onDraw()} function 60 times a second, leading to the 60 FPS mark of GPU rendering. Any operation that reduces the number of calls of this function leads to detrimental performance. The reason of this frame rate drop can be anything that keeps CPU busy and thus unable to call \emph{onDraw()} enough times.\\
+Also, Android emplys a \emph{Low Memory Killer (LMK)} which kills backround applications according to memory they are using, meaning the better memory optimization we use, more time our app gets to live in background.\\
+We will now enumerate the reasons why an Android application lags
+
+\newpage
+
+\subsection{Heavy Computations or Network Calls}
+Heavy Computations or Network Calls \emph{(like downloading images, making API calls, etc)} when done on Main Thread \emph{(known as UI thread in Android)}, lead to wasteful CPU cycles which could be used to render UI. These computations can emulate \emph{blocking} or \emph{busy waiting} and thus should be moved to another \emph{Thread} of their own.\\
+A further improvement can be made by caching the frequently made calculations, removing the need of using threads. Caching does not necessarily improve performance but decreases the waiting time for the user as concurrency ensures no frame rate drops but still takes the same amount of time in calculating the results.\\
+Since it is a well known solution \emph{(yet developers tend to ignore)}, we will not discuss it any further.
+
+\subsection{Repeated GC Calls}
+Another reason developers forget to consider is that the Android runtime invokes Garbage Collector every time it needs to replenish the memory as it feels the free RAM is getting less. If there are huge memory allocations in the application, GC call frequency will be considerably increased and thus frame rates will drop leading to lag.\\
+Common solution to this problem is using better data structures specific to Android, usually not consistent with the Java Development Guidlines, as it focuses on general development.
+
+\subsection{Memory Leaks}
+A severe case of repeated GC calls take place if there is a memory leak. Because GC cannot reclaim memory on each run, Android Runtime continues invoking it until a minimum amount of free RAM is ensured. With a memory leak, this won't be able to happen and thus, GC will run more frequently, increasing the memory consumed by our and and also decreasing its performance.
+
+\section{Conclusion}
 \blindtext
 
 \begin{minted}[bgcolor=LightGray]{Java}
@@ -37,12 +68,6 @@ public static void main(String... args) {
     System.out.println();
 }
 \end{minted}
-
-\subsection{Subsection Heading Here}
-\blindtext
-
-\section{Conclusion}
-\blindtext
 
 
 \appendices
