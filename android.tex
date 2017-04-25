@@ -69,7 +69,7 @@ In further sections, we will discuss the topics we analysed and provide solution
 Major portion of our analysis has been on memory leaks and to provide better solutions to ensure they don't happen. We will start by defining a memory leak.\\
 
 \subsubsection{Definition}
-A memory leak is a type of resource leak that occurs when a computer program incorrectly manages memory allocations in such a way that memory which is no longer needed is not released. In object-oriented programming, a memory leak may happen when an object is stored in memory but cannot be accessed by the running code.
+A memory leak [6] is a type of resource leak that occurs when a computer program incorrectly manages memory allocations in such a way that memory which is no longer needed is not released. In object-oriented programming, a memory leak may happen when an object is stored in memory but cannot be accessed by the running code.
 
 Because they can exhaust available system memory as an application runs, memory leaks are often the cause of or a contributing factor to software aging.\\
 
@@ -151,19 +151,31 @@ public static void main(String... args) {
 }
 \end{minted}
 
-\appendices
-\section{Proof of the First Zonklar Equation}
-Some text for the appendix.
-
-% use section* for acknowledgement
 \section*{Acknowledgment}
 
-The authors would like to thank...
+The authors would like to thank Jake Wharton on his Presentation on \emph{Hidden Java Costs}
 
 \begin{thebibliography}{1}
 
 \bibitem{}
-H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed. Harlow, England: Addison-Wesley, 1999.
+Yoonsik Cheon, \emph{Are Java Programming Best Practices Also Best Practices for Android?}, The University of Texas at El Paso, USA
+
+\bibitem{}
+Prajakta Gotarane and Sumedh Pundkar, \emph{Smart Coding using New Code Optimization Techniques in Java to Reduce Runtime Overhead of Java Compiler}, UMIT, SNDT Womens University, Santacruz, Mumbai
+
+\bibitem{}
+J. Bloch, Effective Java, second edition, Addison-Wesley, 2008.
+
+\bibitem{}
+Jake Wharton, \emph{Hidden Java Costs}
+
+\bibitem{}
+Best Practice for Performance,\\
+https://developer.android.com/training/best-performance.html 
+
+\bibitem{}
+Memory Leak,\\
+https://en.wikipedia.org/wiki/Memory-leak
 
 \end{thebibliography}
 
