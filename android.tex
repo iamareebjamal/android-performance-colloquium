@@ -158,11 +158,11 @@ public void onCreate(Bundle save) {
 
 
 \subsection{ArrayList Optimizations}
-ArrayList is most commonly used List, used to store arrays data of same type. ArrayList in java have some default size but Android SDk initialize ArrayList with size 0 by default.When any data is added to ArrayList, it first checks if the size of ArrayList is sufficient enough to save the data if yes then it easily stores data but in case where the ArrayList's size isn't enough to accomodate the data, ArrayList allocated a new memory with larger size (in multiples of 8) and copy all the previously stored data in new memory and then remove old memory used and finally add the new data.
+ArrayList is the most commonly used implementation of List Collection in Java SDK, used to store arrays data of same type. ArrayList in java has default memory size of 8, but Android SDK initializes ArrayList with size 0 by default.When any data is added to ArrayList, it first checks if the size of ArrayList is sufficient enough to  the data, and if so, it adds the data but in case where the size isn't enough to accomodate it, then ArrayList allocates a new memory with larger size (in multiples of 8), copies all the previously stored data in new memory, remove old memory used and finally add the new data.
 
-\emph{For example :} If there are 1000 objects to be stored in ArrayList and objects are added one by one then suppose if the ArrayList doesn't have memory to store 1000th object then a new memory location will be allocated, all data from previous memory will be copied and then the new data (1000th object) will be added.
+\emph{For example :} If there are 1000 objects to be stored in ArrayList and objects are added one by one, then after each multiple of 8 items, new memory will be allocated about $\log_8(1000)$ times.
 
-The allocation of memory again and again, and copying the data from previous location to new taked enough amout of time also if the object's size is huge then copying the single object may take a lot time.
+The allocation of memory repeatedly, and copying the data from previous location to new wastes enough amount of time. Also if the object's size is huge, then copying even single data object my take a significant amount of time in loops.
 
 A better approach would be intializing arraylist with the data size for example :
 
@@ -176,15 +176,15 @@ public List<String> getStudents(List<Student> students){
 }
 \end{minted}
 This will allocate the memory only once and lot of time will be saved in allocating and copying
-the data.
+the data. Even if this memory is insufficient, only few excess memory allocations will take place.
 
 
 \subsection{Enums vs Static Constants}
-Whenever we need to define states of the object we use Enums. Enums are like classes which have their own variable and can also have their own methods.Since they act like classes there is an associated memory overheads.Although Enums can help in securing type safety but in case of android it must be avoided. The drawback of Enums as memory overhead is much more that advantage of typesafe as memory is the crucial element in android.
+Whenever we need to define states for an object or any other use case, we use Enums. Enums are classes which have their own variable and can also have their own methods. Since they act like classes, there is an associated memory overhead. Although Enums can help in type safety, their use in Android causes a memory overhead which outweighs its benefits.
 
-\emph{For example :} If a simplest enum is instansiated it has 500 bytes of memory overhead by default and if somehow we forget to make them static then every object would have it's own reference of enums and can cause lot of memory wastage.
+\emph{For example :} If a simple enum is instatiated, it has 500 bytes of memory overhead by default and if somehow we forget to make them static, then every object would have its own reference of enums and can cause lot of memory wastage.
 
-A better approach to this problem is using static final constants which will require lot less memory than Enums and fulfill alomost same work as Enums.
+A better approach to this problem would be using static final constants which will require lot less memory than enums and fulfill almost same work as enums.
 
 \begin{itemize}
 	\item Enums
@@ -202,7 +202,8 @@ static final int OFF = 0;
 \end{itemize}
 
 \subsection{StringBuilder Optimizations}
-As we talked about ArrayList, StringBuilder also does the same thing but in the case of StringBuilder the stituation is even worse. This is because StringBuilder assigns the memory exactly to the size of string needed to append + 1 to store end of string. The stituation become worse and worse everytime a new string is appended because everytime the string appends in StringBuilder , each time a new Memory is allocated with size of previous allocated memory + new String Size +1. Consider an example where you need to 1000 names in a single string, using StringBuilder it would take 1000 allocation of memory and every time it allocate the memory the previous memory is copied into new one making StringBuiler much worse than ArrayList.
+In the previous section, we talked about ArrayList, and the allocations which take place on repeated insertions. The allocations in case of StringBuilder are worse as instead of allocating in multiples, it assigns the memory exactly to the size of string needed to append + 1. Everytime a string is appended in StringBuilder, a new memory is allocated with size of previous allocated memory + new String liength +1.\\
+Consider an example where you need to append 1000 names in a single string using StringBuilder. It would take 1000 allocation of memory and every time it allocate the memory the previous memory is copied into new one wasting a lot of CPU cycles.
 \begin{minted}[bgcolor=LightGray]{Java}
 public String getNames(List<Student> students){
   StringBuilder sb = new StringBuilder();
@@ -212,7 +213,7 @@ public String getNames(List<Student> students){
   return sb.toString();
 }
 \end{minted}
-A simple Solution to this problem is using the some random number (for say 20) and then intialize the StringBuilder with averageNumber * number of strings to append. This will allow to allocate the StringBuilder a starting memory and can help in reducing the allocations and memory.
+A simple solution to this problem is using some random number (let's say 20) and intialize the StringBuilder with averageNumber * number of strings to be appended. This will allow to allocate the StringBuilder a starting memory and can help in reducing the allocations and CPU utilisation.
 \begin{minted}[bgcolor=LightGray]{Java}
 public getNames(List<Student> students){
   int num = 20;
