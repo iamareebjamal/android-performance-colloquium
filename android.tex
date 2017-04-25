@@ -76,10 +76,13 @@ Because they can exhaust available system memory as an application runs, memory 
 \subsubsection{Common memory leaks}
 
 \subsection{ArrayList Optimizations}
-ArrayList is most commonly used List, used to store arrays data of same type. ArrayList in java have some default size but Android SDk initialize ArrayList with size 0 by default.When any data is added to ArrayList, it first checks if the size of ArrayList is sufficient enough to save the data if yes then it easily stores data but in case where the ArrayList's size isn't enough to accomodate the data, ArrayList allocated a new memory with larger size (in multiples of 8) and copy all the previously stored data in new memory and then remove old memory used and finally add the new data.\\
-For example : If there are 1000 objects to be stored in ArrayList and objects are added one by one then suppose if the ArrayList doesn't have memory to store 1000th object then a new memory location will be allocated, all data from previous memory will be copied and then the new data (1000th object) will be added. \\ 
-The allocation of memory again and again, and copying the data from previous location to new taked enough amout of time also if the object's size is huge then copying the single object may take a lot time.\\\\
-A better approach would be intializing arraylist with the data size for example :\\
+ArrayList is most commonly used List, used to store arrays data of same type. ArrayList in java have some default size but Android SDk initialize ArrayList with size 0 by default.When any data is added to ArrayList, it first checks if the size of ArrayList is sufficient enough to save the data if yes then it easily stores data but in case where the ArrayList's size isn't enough to accomodate the data, ArrayList allocated a new memory with larger size (in multiples of 8) and copy all the previously stored data in new memory and then remove old memory used and finally add the new data.
+
+\emph{For example :} If there are 1000 objects to be stored in ArrayList and objects are added one by one then suppose if the ArrayList doesn't have memory to store 1000th object then a new memory location will be allocated, all data from previous memory will be copied and then the new data (1000th object) will be added.
+
+The allocation of memory again and again, and copying the data from previous location to new taked enough amout of time also if the object's size is huge then copying the single object may take a lot time.
+
+A better approach would be intializing arraylist with the data size for example :
 
 \begin{minted}[bgcolor=LightGray]{Java}
 public List<String> getStudents(List<Student> students){
@@ -93,6 +96,29 @@ public List<String> getStudents(List<Student> students){
 This will allocate the memory only once and lot of time will be saved in allocating and copying
 the data.
 
+
+\subsection{Enums vs Static Constants}
+Whenever we need to define states of the object we use Enums. Enums are like classes which have their own variable and can also have their own methods.Since they act like classes there is an associated memory overheads.Although Enums can help in securing type safety but in case of android it must be avoided. The drawback of Enums as memory overhead is much more that advantage of typesafe as memory is the crucial element in android.
+
+\emph{For example :} If a simplest enum is instansiated it has 500 bytes of memory overhead by default and if somehow we forget to make them static then every object would have it's own reference of enums and can cause lot of memory wastage.
+
+A better approach to this problem is using static final constants which will require lot less memory than Enums and fulfill alomost same work as Enums.
+
+\begin{itemize}
+	\item Enums
+\begin{minted}[bgcolor=LightGray]{Java}
+public static enum State {
+  int ON =  1;
+  int OFF = 0;
+};
+\end{minted}
+	\item Static Constants
+\begin{minted}[bgcolor=LightGray]{Java}
+static final int ON =  1;
+static final int OFF = 0;
+\end{minted}
+\end{itemize}
+
 \section{Conclusion}
 \blindtext
 
@@ -101,7 +127,6 @@ public static void main(String... args) {
     System.out.println();
 }
 \end{minted}
-
 
 \appendices
 \section{Proof of the First Zonklar Equation}
