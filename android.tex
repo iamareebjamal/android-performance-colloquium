@@ -60,6 +60,39 @@ Common solution to this problem is using better data structures specific to Andr
 \subsection{Memory Leaks}
 A severe case of repeated GC calls take place if there is a memory leak. Because GC cannot reclaim memory on each run, Android Runtime continues invoking it until a minimum amount of free RAM is ensured. With a memory leak, this won't be able to happen and thus, GC will run more frequently, increasing the memory consumed by our and and also decreasing its performance.
 
+\newpage
+
+\section{Analysis and Solutions}
+In further sections, we will discuss the topics we analysed and provide solutions to those specific problems in context of Android Development
+
+\subsection{Memory Leaks}
+Major portion of our analysis has been on memory leaks and to provide better solutions to ensure they don't happen. We will start by defining a memory leak.\\
+
+\subsubsection{Definition}
+A memory leak is a type of resource leak that occurs when a computer program incorrectly manages memory allocations in such a way that memory which is no longer needed is not released. In object-oriented programming, a memory leak may happen when an object is stored in memory but cannot be accessed by the running code.
+
+Because they can exhaust available system memory as an application runs, memory leaks are often the cause of or a contributing factor to software aging.\\
+
+\subsubsection{Common memory leaks}
+
+\subsection{ArrayList Optimizations}
+ArrayList is most commonly used List, used to store arrays data of same type. ArrayList in java have some default size but Android SDk initialize ArrayList with size 0 by default.When any data is added to ArrayList, it first checks if the size of ArrayList is sufficient enough to save the data if yes then it easily stores data but in case where the ArrayList's size isn't enough to accomodate the data, ArrayList allocated a new memory with larger size (in multiples of 8) and copy all the previously stored data in new memory and then remove old memory used and finally add the new data.\\
+For example : If there are 1000 objects to be stored in ArrayList and objects are added one by one then suppose if the ArrayList doesn't have memory to store 1000th object then a new memory location will be allocated, all data from previous memory will be copied and then the new data (1000th object) will be added. \\ 
+The allocation of memory again and again, and copying the data from previous location to new taked enough amout of time also if the object's size is huge then copying the single object may take a lot time.\\\\
+A better approach would be intializing arraylist with the data size for example :\\
+
+\begin{minted}[bgcolor=LightGray]{Java}
+public List<String> getStudents(List<Student> students){
+  List<String> student = new ArrayList<>(students.size());
+  for (Student s : students){
+    student.add(s.name);
+  }
+  return student;
+}
+\end{minted}
+This will allocate the memory only once and lot of time will be saved in allocating and copying
+the data.
+
 \section{Conclusion}
 \blindtext
 
