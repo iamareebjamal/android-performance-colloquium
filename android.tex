@@ -68,18 +68,27 @@ In further sections, we will discuss the topics we analysed and provide solution
 \subsection{Memory Leaks}
 Major portion of our analysis has been on memory leaks and to provide better solutions to ensure they don't happen. We will start by defining a memory leak.\\
 
-\subsubsection{Definition}
-A memory leak [6] is a type of resource leak that occurs when a computer program incorrectly manages memory allocations in such a way that memory which is no longer needed is not released. In object-oriented programming, a memory leak may happen when an object is stored in memory but cannot be accessed by the running code.
+\begin{center}
+	DEFINITION
+\end{center}
+A memory leak, in Object Oriented Programming, happens when an object is not needed in program anymore and still resides in memory. And hence, program may never be able to reference it again and so has no way of knowing that some leaked objects are consuming resources and impacting performance.\\
+Since objects are removed from memory using Garbage Collector, they are not derefenced immediately. Instead, a programmer is advised to let GC work in background to remove unused objects, hence taking control from programmer to release this memory. However it is convenient from implementation point of view, it makes memory leaks very hard to debug and easy to occur.\\
 
-Because they can exhaust available system memory as an application runs, memory leaks are often the cause of or a contributing factor to software aging.\\
+Memory Leaks are in Android are usually related to objects bound by a particular lifecycle. When they are kept in memory after their lifecycle has completed, it is usually considered a memory leak. Any Android Developer will know that an \emph{Activity} is a standard Android View class with associated lifecycle. So, if an Activity is instructed by the system to be destroyed and it can't because it is referenced somewhere is a memory leak condition.\\
 
-\subsubsection{Common memory leaks}
+Usually, developers pass their activity instances wherever a \emph{Context} argument is needed and if that instance is held on by any other object, the Acitivity will reside in memory till that reference is not cleared. And since the Activity is likely to be destroyed if it needs to be garbage collected, means it completed it lifecycle leaving no control to the developer to clear that reference, creating a somewhat deadlock kind of situation of memry leak where it never gets resolved.\\
+
+\begin{center}
+	COMMON MEMORY LEAKS
+\end{center}
 
 Some common memory leak examples in Android are :\\
 
 \begin{itemize}
 	\item \emph{Static Context Leak}\\
-	The easiest way to leak an  is by defining a static variable inside the class definition of the Activity and then setting it to the running instance of that Activity. If this reference is not cleared before the Activity’s lifecycle completes, the Activity will be leaked. This is because the object representing the class of the Activity (i.e., MainActivity) is static and remains loaded in memory for the entire runtime of the app. If this class object holds a reference to your Activity instance, it therefore won’t be eligible for garbage collection.
+	A reference held by a static variable has lifetime of entire application, and hence can't be removed until the app closes, meaning if an Activity reference is stored in a static variable, Garbage Collector won't be able to remove the instance of memory, causing a memory leak. This is naturally the easiest way to cause one and is widespread throughout codes of Android Developers.
+	
+	\newpage
 	
 	The same applies if any Context subclass is stored in a static variable, namely:
 	\begin{itemize}
@@ -97,7 +106,7 @@ private static Context context;
 \end{minted}
 
 	\item \emph{Non Static Inner Classes}\\
-	The non static Inner Class always contains a reference to the containing class, and if this class is a Context subclass, then there is an eminent memry leak as each instance of such inner class will hold a reference to outer class and will be independent of Activity Lifecycle, making it difficult for GC to collect the activity if inner class still holds a reference to it.
+	The non static Inner Class always holds a reference to the outer class, and if this class is a Context subclass, then there is an eminent memry leak as each instance of such inner class will hold a reference to outer class and will be independent of Activity Lifecycle, making it difficult for GC to collect the activity if inner class still holds a reference to it.\\
 	
 	If the original Activity is replaced by another one, the inner class reference will be in invalid state, and can result in application crash as well.
 \begin{minted}[bgcolor=LightGray]{Java}
@@ -114,9 +123,12 @@ class DummyClass {
   }
 }
 \end{minted}
+\\
 
 	\item \emph{Anonymous Classes}\\
-	The same effect will happen if an anonymous class is declared in a context subclass such as Activity, as it also holds a reference to containing class. More detrimental effect will happen if a asynchronous task is executed in such a way. Because if it continues to perform background work after the Activity has been destroyed, the reference to the Activity will persist and it won’t be garbage collected until after the background task completes.
+	The same effect will occur if an anonymous class is declared in a context subclass such as Activity, as it also holds a reference to containing class. More detrimental effect will happen if a asynchronous task is executed in such a way. Because if it continues to perform background work after the Activity has been destroyed, the reference to the Activity will persist and it won’t be garbage collected until after the background task completes.\\
+	
+	\newpage
 \begin{minted}[bgcolor=LightGray]{Java}
 void downloadImage() {
   new AsyncTask<...>() {
@@ -149,13 +161,15 @@ public void onCreate(Bundle save) {
 		\item Threads
 		\item Listeners
 		\item TimerTasks
-		\item Sensor Managers
+		\item Sensor Managers\\
 	\end{itemize}
 	
 
 \end{itemize}
 
-
+\begin{center}
+	SOLUTIONS
+\end{center}
 
 \subsection{ArrayList Optimizations}
 ArrayList is the most commonly used implementation of List Collection in Java SDK, used to store arrays data of same type. ArrayList in java has default memory size of 8, but Android SDK initializes ArrayList with size 0 by default.When any data is added to ArrayList, it first checks if the size of ArrayList is sufficient enough to  the data, and if so, it adds the data but in case where the size isn't enough to accomodate it, then ArrayList allocates a new memory with larger size (in multiples of 8), copies all the previously stored data in new memory, remove old memory used and finally add the new data.
