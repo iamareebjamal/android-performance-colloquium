@@ -71,7 +71,7 @@ Major portion of our analysis has been on memory leaks and to provide better sol
 \begin{center}
 	DEFINITION
 \end{center}
-A memory leak, in Object Oriented Programming, happens when an object is not needed in program anymore and still resides in memory. And hence, program may never be able to reference it again and so has no way of knowing that some leaked objects are consuming resources and impacting performance.\\
+A memory leak \cite{memleak}, in Object Oriented Programming, happens when an object is not needed in program anymore and still resides in memory. And hence, program may never be able to reference it again and so has no way of knowing that some leaked objects are consuming resources and impacting performance.\\
 Since objects are removed from memory using Garbage Collector, they are not derefenced immediately. Instead, a programmer is advised to let GC work in background to remove unused objects, hence taking control from programmer to release this memory. However it is convenient from implementation point of view, it makes memory leaks very hard to debug and easy to occur.\\
 
 Memory Leaks are in Android are usually related to objects bound by a particular lifecycle. When they are kept in memory after their lifecycle has completed, it is usually considered a memory leak. Any Android Developer will know that an \emph{Activity} is a standard Android View class with associated lifecycle. So, if an Activity is instructed by the system to be destroyed and it can't because it is referenced somewhere is a memory leak condition.\\
@@ -86,7 +86,7 @@ Some common memory leak examples in Android are :\\
 
 \begin{itemize}
 	\item \emph{Static Context Leak}\\
-	A reference held by a static variable has lifetime of entire application, and hence can't be removed until the app closes, meaning if an Activity reference is stored in a static variable, Garbage Collector won't be able to remove the instance of memory, causing a memory leak. This is naturally the easiest way to cause one and is widespread throughout codes of Android Developers.
+	A reference held by a static variable has lifetime of entire application, and hence can't be removed until the app closes, meaning if an Activity reference is stored in a static variable, Garbage Collector won't be able to remove the instance of memory, causing a memory leak. This is naturally the easiest way \cite{ways} to cause one and is widespread throughout codes of Android Developers.
 	
 	\newpage
 	
@@ -166,6 +166,22 @@ public void onCreate(Bundle save) {
 	
 
 \end{itemize}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.7\linewidth]{memleak}
+	\caption[]{Memory usage of Memory Leaked App \cite{fixing}}
+	\label{fig:memleak}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.7\linewidth]{nomemleak}
+	\caption[]{Normal memory usage of same app \cite{fixing}}
+	\label{fig:nomemleak}
+\end{figure}
+
+\newpage
 
 \begin{center}
 	SOLUTIONS
@@ -262,7 +278,7 @@ for (int i = 0; i < someValue; i++){
 Now this code utilizes single StringBuilder and saves the work of Garbage Collector including the time in allocation and appending of sameConstantStrong repeatedly.
 
 \subsection{SpareArray vs HashMap}
-\emph{SparseArray}s are memory efficient alternatives of \emph{HashMap} (provided only in Android SDK). SparseArrays are used to map the primitive data to another set of data and has the array data structure to store keys rather than AVL tree implementation in HashMaps. What makes SparseArray memory efficient than the HashMap is use of primitive data type as keys removing the need of autoboxing Objects to primitives and vice versa. Also, allocation of the primitive type takes less memory than using Object type. Another reason of its efficiency efficient is that when any key is delete from the SparseArray, instead of actually deleting the key and compacting the array; it marks the index as deleted. This entry can be used again for same key or can be collected by single garbage collection for various marked key at once, hence removing repeated GC calls on the main thread.
+\emph{SparseArray}s \cite{sparsearray} are memory efficient alternatives of \emph{HashMap} (provided only in Android SDK). SparseArrays are used to map the primitive data to another set of data and has the array data structure to store keys rather than AVL tree implementation in HashMaps. What makes SparseArray memory efficient than the HashMap is use of primitive data type as keys removing the need of autoboxing Objects to primitives and vice versa. Also, allocation of the primitive type takes less memory than using Object type. Another reason of its efficiency efficient is that when any key is delete from the SparseArray, instead of actually deleting the key and compacting the array; it marks the index as deleted. This entry can be used again for same key or can be collected by single garbage collection for various marked key at once, hence removing repeated GC calls on the main thread.
 
 But SparseArrays come at the price of computational efficiency as more amount of time is needed to extract an item from SparseArray than a HashMap. So, if the use case of hashing is important, SparseArrays are obsolete in that case.
 
@@ -315,6 +331,9 @@ Yoonsik Cheon, \emph{Are Java Programming Best Practices Also Best Practices for
 Prajakta Gotarane and Sumedh Pundkar, \emph{Smart Coding using New Code Optimization Techniques in Java to Reduce Runtime Overhead of Java Compiler}, UMIT, SNDT Womens University, Santacruz, Mumbai
 
 \bibitem{}
+Hyeon-Ju Yoon, \emph{A Study on the Performance of Android Platform}, Department of Computer Engineering, Kumoh National Institute of Technology, Gumi, Republic of Korea 
+
+\bibitem{}
 J. Bloch, Effective Java, second edition, Addison-Wesley, 2008.
 
 \bibitem{}
@@ -325,12 +344,26 @@ Best Practice for Performance,\\
 https://developer.android.com/training/best-performance.html 
 
 \bibitem{}
+Huu Hai Nguyen and Martin Rinard, \emph{Detecting and Eliminating Memory Leaks Using Cyclic Memory Allocation}, Department of Electrical Engineering and Computer Science, 
+Computer Science and Artificial Intelligence Laboratory, 
+Singapore-MIT Alliance, 
+Massachusetts Institute of Technology
+
+\bibitem{memleak}
 Memory Leak,\\
 https://en.wikipedia.org/wiki/Memory-leak
 
-\bibitem{}
+\bibitem{ways}
 Ways to Memory Leak in Android,\\
 http://blog.nimbledroid.com/2016/05/23/memory-leaks.html
+
+\bibitem{fixing}
+Fixing Memory Leaks in Android\\
+https://riggaroo.co.za/fixing-memory-leaks-in-android-outofmemoryerror/
+
+\bibitem{sparsearray}
+SparseArray\\
+https://developer.android.com/reference/android/util/SparseArray.html
 
 \end{thebibliography}
 
