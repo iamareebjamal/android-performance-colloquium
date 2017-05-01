@@ -241,10 +241,46 @@ public getNames(List<Student> students){
 }
 \end{minted}
 
-\section{SpareArray vs HashMap}
+\subsection{SpareArray vs HashMap}
 \emph{SparseArray}s are memory efficient alternatives of \emph{HashMap} (provided only in Android SDK). SparseArrays are used to map the primitive data to another set of data and has the array data structure to store keys rather than AVL tree implementation in HashMaps. What makes SparseArray memory efficient than the HashMap is use of primitive data type as keys removing the need of autoboxing Objects to primitives and vice versa. Also, allocation of the primitive type takes less memory than using Object type. Another reason of its efficiency efficient is that when any key is delete from the SparseArray, instead of actually deleting the key and compacting the array; it marks the index as deleted. This entry can be used again for same key or can be collected by single garbage collection for various marked key at once, hence removing repeated GC calls on the main thread.
 
 But SparseArrays come at the price of computational efficiency as more amount of time is needed to extract an item from SparseArray than a HashMap. So, if the use case of hashing is important, SparseArrays are obsolete in that case.
+
+\subsection{Iterators}
+Consider this code for example:
+\begin{minted}[bgcolor=LightGray]{Java}
+for(Event event : events) {
+  /* Do some operation */
+}}
+\end{minted}
+
+Java Documentation recommends that \textit{foreach} loops are the preferred way of walking through a Collection, but let us look how that translates into -
+\begin{minted}[bgcolor=LightGray]{Java}
+for(Event = null, Iterator it = events.iterator(); it.hasNext(); event = it.next()) {
+  /* Do some operation */
+}
+\end{minted}
+As you can see, there are many object allocations throughout the code, so calling it inside the frequent funtions like \textit{onDraw()} will be detrimental to the performance of the application and hence, rather than using iterators or foreach loop, we should use indexing. In fact, only array foreach loop runs as efficiently as indexing because Java automatically converts it to indexed loop, because arrays don't have iterators.
+
+Here's the indexed traversal of a list -
+\begin{minted}[bgcolor=LightGray]{Java}
+int i = 0;
+for (i; i < someList.size(); i++){
+  int x = someList.size() * 3.14 / (i+1);
+  Item item = someList.get(i);
+  /* Do some operation */
+} 
+\end{minted}
+An obvious problem almost every developer makes in above code is that it is calling \textit{size()} method repeatedly over the whole traversal where mostly, the colection's size never changes. A better version of the above code would be - 
+\begin{minted}[bgcolor=LightGray]{Java}
+int size = someList.size();
+int value  = size * 3.14;
+for (int i = 0; i< size; i++){
+  int x = value/(i+1);
+  Item item = someList.get(i);
+  /* Do some operation */	
+}
+\end{minted}
 
 \section{Conclusion}
 Android Performance Practices are easy to forget and thus cause a huge negative traction toward the developer community and Java, whereas there are easy fixes and precautions developers can take while developing their applications like not delegating resource management on Garbage Collector, handling resources themselves, using better and memory efficient data structures and tying every threaded task to the view/activity lifecycle. There are various resources detailing the process of performance optimation along with the ofiicial Android Developer Site, where developers should pay attention to those points, as Performance Matters.
