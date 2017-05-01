@@ -215,6 +215,8 @@ static final int OFF = 0;
 \end{minted}
 \end{itemize}
 
+\newpage
+
 \subsection{StringBuilder Optimizations}
 In the previous section, we talked about ArrayList, and the allocations which take place on repeated insertions. The allocations in case of StringBuilder are worse as instead of allocating in multiples, it assigns the memory exactly to the size of string needed to append + 1. Everytime a string is appended in StringBuilder, a new memory is allocated with size of previous allocated memory + new String liength +1.\\
 Consider an example where you need to append 1000 names in a single string using StringBuilder. It would take 1000 allocation of memory and every time it allocate the memory the previous memory is copied into new one wasting a lot of CPU cycles.
@@ -238,6 +240,11 @@ public getNames(List<Student> students){
   return sb.toString();
 }
 \end{minted}
+
+\section{SpareArray vs HashMap}
+\emph{SparseArray}s are memory efficient alternatives of \emph{HashMap} (provided only in Android SDK). SparseArrays are used to map the primitive data to another set of data and has the array data structure to store keys rather than AVL tree implementation in HashMaps. What makes SparseArray memory efficient than the HashMap is use of primitive data type as keys removing the need of autoboxing Objects to primitives and vice versa. Also, allocation of the primitive type takes less memory than using Object type. Another reason of its efficiency efficient is that when any key is delete from the SparseArray, instead of actually deleting the key and compacting the array; it marks the index as deleted. This entry can be used again for same key or can be collected by single garbage collection for various marked key at once, hence removing repeated GC calls on the main thread.
+
+But SparseArrays come at the price of computational efficiency as more amount of time is needed to extract an item from SparseArray than a HashMap. So, if the use case of hashing is important, SparseArrays are obsolete in that case.
 
 \section{Conclusion}
 Android Performance Practices are easy to forget and thus cause a huge negative traction toward the developer community and Java, whereas there are easy fixes and precautions developers can take while developing their applications like not delegating resource management on Garbage Collector, handling resources themselves, using better and memory efficient data structures and tying every threaded task to the view/activity lifecycle. There are various resources detailing the process of performance optimation along with the ofiicial Android Developer Site, where developers should pay attention to those points, as Performance Matters.
