@@ -13,16 +13,14 @@
 \begin{document}
 \title{Android Performance Analysis and \\ Optimization Techniques}
 
-\author{Areeb Jamal and Divya Prakash Varshney \\
-	 \IEEEmembership{Computer Engineering 3rd Year, ZHCET}\\
-	 \color{white}.\\\color{black}
- 	\textit{Supervisor: Syeda Aasiyah Aijaz Termizi}}
- 
+\author{
+	Areeb Jamal, Divya Prakash Varshney, Syeda Aasiyah Aijaz Termizi\\[3ex]
+	\IEEEmembership{Department of Computer Engineering,\\ Zakir Hussain College of Engineering and Technology, AMU\\ Aligarh}\\[3ex]
+	\texttt{jamal.areeb@gmail.com}\\
+	\texttt{divs4debu@gmail.com}
+}
 
 
-% The paper headers
-\markboth{Android Optimization Techniques, May~2016}%
-{Android Performance}
 
 
 % make the title area
@@ -30,7 +28,7 @@
 
 
 \begin{abstract}
-Android, being the most widely used operating system in the world, has attracted a large number of developers throughout the world. And since, the official programming language used to develop Android Apps is Java, the developers coming from its background often make wrong assumptions about the best practices in Android. Making these apps perform poorly in respect to CPU and memory utilisation. The purpose of this paper is to discuss some common solutions to optimization problems associated with Android.
+Android, being the most widely used operating system in the world, has attracted a large number of developers throughout the world. And since, the official programming language used to develop Android Apps is Java, the developers coming from its background often make wrong assumptions about the best practices in Android, making these apps perform poorly in respect to CPU and memory utilisation. The purpose of this paper is to discuss some common solutions to optimization problems associated with Android.
 \end{abstract}
 
 
@@ -41,7 +39,10 @@ There are 3 areas of performance in mobile computing :
 	\item Memory
 	\item Network
 \end{itemize}
-Because of the fact that \emph{Network} optimization is generally language agnostic and is covered in various modern netwroking libraries, we will focus on \emph{CPU} and \emph{Memory} usage optimization and analysis techniques.\\
+Because of the fact that \emph{Network} optimization is generally language agnostic and is covered in various modern netwroking libraries, we will focus on \emph{CPU} and \emph{Memory} usage optimization and analysis techniques.
+
+The base paper \cite{base} used does discuss about deviations of performance practices of Java and Android but is focused on game development and doesn't touch on memory leaks and efficient data structures.
+
 The CPU utilization in case of mobile computing can be closely tied to memory as poor RAM optimisation may lead to repeated calls of Garbage Collector leading to wasteful CPU cycles meaning frame rate drops, so in order to optimize CPU performance, we should also improve the memory usage of the application.
 
 \section{Need of Performance}
@@ -50,7 +51,6 @@ To ensure smooth performance, app needs to call the basic \emph{onDraw()} functi
 Also, Android emplys a \emph{Low Memory Killer (LMK)} which kills backround applications according to memory they are using, meaning the better memory optimization we use, more time our app gets to live in background.\\
 We will now enumerate the reasons why an Android application lags
 
-\newpage
 
 \subsection{Heavy Computations or Network Calls}
 Heavy Computations or Network Calls \emph{(like downloading images, making API calls, etc)} when done on Main Thread \emph{(known as UI thread in Android)}, lead to wasteful CPU cycles which could be used to render UI. These computations can emulate \emph{blocking} or \emph{busy waiting} and thus should be moved to another \emph{Thread} of their own.\\
@@ -63,8 +63,6 @@ Common solution to this problem is using better data structures specific to Andr
 
 \subsection{Memory Leaks}
 A severe case of repeated GC calls take place if there is a memory leak. Because GC cannot reclaim memory on each run, Android Runtime continues invoking it until a minimum amount of free RAM is ensured. With a memory leak, this won't be able to happen and thus, GC will run more frequently, increasing the memory consumed by our and and also decreasing its performance.
-
-\newpage
 
 \section{Analysis and Solutions}
 In further sections, we will discuss the topics we analysed and provide solutions to those specific problems in context of Android Development
@@ -80,7 +78,7 @@ Since objects are removed from memory using Garbage Collector, they are not dere
 
 Memory Leaks are in Android are usually related to objects bound by a particular lifecycle. When they are kept in memory after their lifecycle has completed, it is usually considered a memory leak. Any Android Developer will know that an \emph{Activity} is a standard Android View class with associated lifecycle. So, if an Activity is instructed by the system to be destroyed and it can't because it is referenced somewhere is a memory leak condition.\\
 
-Usually, developers pass their activity instances wherever a \emph{Context} argument is needed and if that instance is held on by any other object, the Acitivity will reside in memory till that reference is not cleared. And since the Activity is likely to be destroyed if it needs to be garbage collected, means it completed it lifecycle leaving no control to the developer to clear that reference, creating a somewhat deadlock kind of situation of memry leak where it never gets resolved.\\
+Usually, developers pass their activity instances wherever a \emph{Context} argument is needed and if that instance is held on by any other object, the Acitivity will reside in memory till that reference is not cleared. And since the Activity is likely to be destroyed if it needs to be garbage collected, means it completed it lifecycle leaving no control to the developer to clear that reference, creating a somewhat deadlock kind of situation of memory leak where it never gets resolved.\\
 
 \begin{center}
 	COMMON MEMORY LEAKS
@@ -92,7 +90,6 @@ Some common memory leak examples in Android are :\\
 	\item \emph{Static Context Leak}\\
 	A reference held by a static variable has lifetime of entire application, and hence can't be removed until the app closes, meaning if an Activity reference is stored in a static variable, Garbage Collector won't be able to remove the instance of memory, causing a memory leak. This is naturally the easiest way \cite{ways} to cause one and is widespread throughout codes of Android Developers.
 	
-	\newpage
 	
 	The same applies if any Context subclass is stored in a static variable, namely:
 	\begin{itemize}
@@ -153,7 +150,7 @@ void downloadImage() {
 public void onCreate(Bundle save) {
   /* ... */
   btn.setOnClickListener((view) -> {
-    (new DummyClass()).doSomeTask();
+    downloadImage();
   });
 }
 \end{minted}
@@ -191,7 +188,7 @@ public void onCreate(Bundle save) {
 	SOLUTION
 \end{center}
 
-WeakReferences \cite{weak} are special reference classes in Java which let Garbase Collector collect the objct from memory even if its weak reference is being held by any otjer object. This allows the restriction of Activity being forecefully kept in memory to be removed and memory leak is prevented.
+WeakReferences \cite{weak} are special reference classes in Java which let Garbage Collector collect the object from memory even if its weak reference is being held by any other object. This allows the restriction of Activity being forcefully kept in memory to be removed and memory leak is prevented.
 
 \begin{minted}[bgcolor=LightGray]{Java}
 class AsyncTask extends <...> {
@@ -382,7 +379,7 @@ Consider this code for example:
 \begin{minted}[bgcolor=LightGray]{Java}
 for(Event event : events) {
   /* Do some operation */
-}}
+}
 \end{minted}
 
 Java Documentation recommends that \textit{foreach} loops are the preferred way of walking through a Collection, but let us look how that translates into -
@@ -419,7 +416,7 @@ Android Performance Practices are easy to forget and thus cause a huge negative 
 
 \begin{thebibliography}{1}
 
-\bibitem{}
+\bibitem{base}
 Yoonsik Cheon, \emph{Are Java Programming Best Practices Also Best Practices for Android?}, The University of Texas at El Paso, USA
 
 \bibitem{}
