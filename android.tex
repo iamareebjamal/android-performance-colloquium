@@ -14,10 +14,14 @@
 \title{Android Performance Analysis and \\ Optimization Techniques}
 
 \author{Areeb Jamal and Divya Prakash Varshney \\
-	 \IEEEmembership{Computer Engineering 3rd Year, ZHCET}}
+	 \IEEEmembership{Computer Engineering 3rd Year, ZHCET}\\
+	 \color{white}.\\\color{black}
+ 	\textit{Supervisor: Syeda Aasiyah Aijaz Termizi}}
+ 
+
 
 % The paper headers
-\markboth{Android Optimization Techniques, April~2016}%
+\markboth{Android Optimization Techniques, May~2016}%
 {Android Performance}
 
 
@@ -184,8 +188,101 @@ public void onCreate(Bundle save) {
 \newpage
 
 \begin{center}
-	SOLUTIONS
+	SOLUTION
 \end{center}
+
+WeakReferences \cite{weak} are special reference classes in Java which let Garbase Collector collect the objct from memory even if its weak reference is being held by any otjer object. This allows the restriction of Activity being forecefully kept in memory to be removed and memory leak is prevented.
+
+\begin{minted}[bgcolor=LightGray]{Java}
+class AsyncTask extends <...> {
+  WeakReference<Activity> activityReference;
+  
+  /* ... */
+  
+  public void setActivity(Activity activity) {
+    activityReference = new WeakReference<>(activity);
+  }
+  
+  @Override
+  protected void onPostExecute(String result) {
+    Activity activity = activityReference.get();
+    if(activity == null){
+      // Our activity was garbage collected. Return
+      return;
+    }
+    
+    // Activity present in weak reference
+    acitivity.updateStatus(message);
+  }
+}
+\end{minted}
+
+In case of working with a weak reference, it can be garbage collected at any moment, so whenever we need to use it, we have to check by using \textit{get()} method to see if it is available or not.
+
+In the above example, the AsyncTask will be holding a weak reference to the activity and when it is destroyed by either rotation or pressing of the back button, in the next GC run, GC will see that activity needs to be garbage collected but is held by AsyncTask as weak reference which is still running in backgrund, but unlike in the case of strong reference where it would have left the activity in memory, GC will collect it as it a weak reference, preventing memory leak.
+
+\textbf{Caveats:} However, preventing memory leaks with WeakReference is easy, it still contains two problems:
+
+\begin{itemize}
+	\item \textit{Delayed GC Run}\\
+	However it is ensured that GC will collect a WeakReference wrapped Activity, we don't know when the next GC run will occur and till then the memory consumption of our app will keep increasing, and only thing we will be sure about is that we know it will be garbage collected. 
+	Also, if the activity is replaced before previous one being collected, the stale resource problem persists and can cause crashes.
+	
+	\item \textit{Forced Garbage Collection}\\
+	Consider a case where you are uploading an image using a weak reference. Whenever working with large files like bitmaps, memory overhead is huge. Besides, it may take time for user to pick that image. In that time, at any instant, while picking the image or even uploading it, a GC run may remove the activity reference from its container and when the upload is completed, no activity will be present to notify its completion. 
+	Because GC doesn't know if weak reference is needed or not in memory, it will always remove it. GC makes decision of needed based on if it is a strong reference, and doesn't remove it from the memory, but that makes code succeptible to memory leak.
+\end{itemize}
+
+\textbf{Solution:} The standard solution of avoiding memory leaks is \textit{binding the listener to Activity/View lifecycle}. Instead of using a weak reference, which can be removed from memory at any instance, or even a strong reference which may never be removed, we should tell GC to not remove our view until is is destroyed and once it is, you may. This mixture of behaviour of strong and weak reference can easily be achieved by using lifecycle methods to remove the reference in the listener whenever the view is being destroyes and hence is not needed in memory.
+
+\begin{minted}[bgcolor=LightGray]{Java}
+class AsyncTask extends <...> {
+  Activity activityReference;
+
+  /* ... */
+
+  public void setActivity(Activity activity) {
+    activityReference = activity;
+  }
+  
+  public void removeActivity() {
+    // Remove activity reference
+    activityReference = null;
+  }
+
+  @Override
+  protected void onPostExecute(String result) {
+    if(activity == null){
+      // Our activity reference was removed
+      return;
+    }
+
+    // Activity present
+    acitivity.updateStatus(message);
+  }
+}
+\end{minted}
+\begin{minted}[bgcolor=LightGray]{Java}
+class MainActivity extends Activity {
+  
+  @Override
+  public void onStart() {
+    // Bind listener on start of activity
+    asyncTask.setActivity(this);
+  }
+  
+  /* ... */
+  
+  @Override
+  public void onDestroy() {
+    // Remove binding when being destroyed
+    asyncTask.removeActivty();
+  }
+  
+}
+\end{minted}
+
+This method will ensure one to one binding of listener and activity along with tight coupling of lifecycle events between them preventing, the need of weak references and memory leaks.
 
 \subsection{ArrayList Optimizations}
 ArrayList is the most commonly used implementation of List Collection in Java SDK, used to store arrays data of same type. ArrayList in java has default memory size of 8, but Android SDK initializes ArrayList with size 0 by default.When any data is added to ArrayList, it first checks if the size of ArrayList is sufficient enough to  the data, and if so, it adds the data but in case where the size isn't enough to accomodate it, then ArrayList allocates a new memory with larger size (in multiples of 8), copies all the previously stored data in new memory, remove old memory used and finally add the new data.
@@ -230,8 +327,6 @@ static final int ON =  1;
 static final int OFF = 0;
 \end{minted}
 \end{itemize}
-
-\newpage
 
 \subsection{StringBuilder Optimizations}
 In the previous section, we talked about ArrayList, and the allocations which take place on repeated insertions. The allocations in case of StringBuilder are worse as instead of allocating in multiples, it assigns the memory exactly to the size of string needed to append + 1. Everytime a string is appended in StringBuilder, a new memory is allocated with size of previous allocated memory + new String liength +1.\\
@@ -360,6 +455,10 @@ http://blog.nimbledroid.com/2016/05/23/memory-leaks.html
 \bibitem{fixing}
 Fixing Memory Leaks in Android\\
 https://riggaroo.co.za/fixing-memory-leaks-in-android-outofmemoryerror/
+
+\bibitem{weak}
+WeakReference\\
+https://developer.android.com/reference/java/lang/ref/WeakReference.html
 
 \bibitem{sparsearray}
 SparseArray\\
